@@ -3,13 +3,18 @@ package cn.bugstack.infrastructure.adapter.repository;
 import cn.bugstack.domain.activity.adapter.repository.IActivityRepository;
 import cn.bugstack.domain.activity.model.valobj.DiscountTypeEnum;
 import cn.bugstack.domain.activity.model.valobj.GroupBuyActivityDiscountVO;
+import cn.bugstack.domain.activity.model.valobj.SCSkuActivityVO;
 import cn.bugstack.domain.activity.model.valobj.SkuVO;
 import cn.bugstack.infrastructure.dao.IGroupBuyActivityDao;
 import cn.bugstack.infrastructure.dao.IGroupBuyDiscountDao;
+import cn.bugstack.infrastructure.dao.ISCSkuActivityDao;
 import cn.bugstack.infrastructure.dao.ISkuDao;
 import cn.bugstack.infrastructure.dao.po.GroupBuyActivity;
 import cn.bugstack.infrastructure.dao.po.GroupBuyDiscount;
+import cn.bugstack.infrastructure.dao.po.SCSkuActivity;
 import cn.bugstack.infrastructure.dao.po.Sku;
+import cn.bugstack.infrastructure.redis.IRedisService;
+import org.redisson.api.RBitSet;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -29,18 +34,21 @@ public class ActivityRepository implements IActivityRepository {
 
     @Resource
     private ISkuDao skuDao;
+    @Resource
+    private ISCSkuActivityDao skuActivityDao;
+
+    @Resource
+    private IRedisService redisService;
+
 
     @Override
-    public GroupBuyActivityDiscountVO queryGroupBuyActivityDiscountVO(String source, String channel) {
-        // 根据SC渠道值查询配置中最新的1个有效的活动
-        GroupBuyActivity groupBuyActivityReq = new GroupBuyActivity();
-        groupBuyActivityReq.setSource(source);
-        groupBuyActivityReq.setChannel(channel);
-        GroupBuyActivity groupBuyActivityRes = groupBuyActivityDao.queryValidGroupBuyActivity(groupBuyActivityReq);
+    public GroupBuyActivityDiscountVO queryGroupBuyActivityDiscountVO(Long activityId) {
+        GroupBuyActivity groupBuyActivityRes = groupBuyActivityDao.queryValidGroupBuyActivityId(activityId);
+        if(groupBuyActivityRes== null)return null;
 
         String discountId = groupBuyActivityRes.getDiscountId();
-
         GroupBuyDiscount groupBuyDiscountRes = groupBuyDiscountDao.queryGroupBuyActivityDiscountByDiscountId(discountId);
+        if(groupBuyDiscountRes== null) return null;
         GroupBuyActivityDiscountVO.GroupBuyDiscount groupBuyDiscount = GroupBuyActivityDiscountVO.GroupBuyDiscount.builder()
                 .discountName(groupBuyDiscountRes.getDiscountName())
                 .discountDesc(groupBuyDiscountRes.getDiscountDesc())
@@ -72,11 +80,38 @@ public class ActivityRepository implements IActivityRepository {
     @Override
     public SkuVO querySkuByGoodsId(String goodsId) {
         Sku sku = skuDao.querySkuByGoodsId(goodsId);
+        if (null == sku) return null;
         return SkuVO.builder()
                 .goodsId(sku.getGoodsId())
                 .goodsName(sku.getGoodsName())
                 .originalPrice(sku.getOriginalPrice())
                 .build();
+    }
+
+    @Override
+    public SCSkuActivityVO querySCSkuActivityBySCGoodsId(String source, String channel, String goodsId) {
+        SCSkuActivity scSkuActivityReq = new SCSkuActivity();
+        scSkuActivityReq.setSource(source);
+        scSkuActivityReq.setChannel(channel);
+        scSkuActivityReq.setGoodsId(goodsId);
+
+        SCSkuActivity scSkuActivity = skuActivityDao.querySCSkuActivityBySCGoodsId(scSkuActivityReq);
+        if (null == scSkuActivity) return null;
+
+        return SCSkuActivityVO.builder()
+                .source(scSkuActivity.getSource())
+                .chanel(scSkuActivity.getChannel())
+                .activityId(scSkuActivity.getActivityId())
+                .goodsId(scSkuActivity.getGoodsId())
+                .build();
+    }
+
+    @Override
+    public boolean isTagCrowdRange(String tagId, String userId) {
+        RBitSet bitSet = redisService.getBitSet(tagId);
+        if (!bitSet.isExists()) return true;
+        // 判断用户是否存在人群中
+        return bitSet.get(redisService.getIndexFromUserId(userId));
     }
 
 }
