@@ -3,6 +3,7 @@ package cn.bugstack.domain.activity.adapter.repository;
 import cn.bugstack.domain.activity.model.valobj.GroupBuyActivityDiscountVO;
 import cn.bugstack.domain.activity.model.valobj.SCSkuActivityVO;
 import cn.bugstack.domain.activity.model.valobj.SkuVO;
+import cn.bugstack.domain.trade.model.entity.GroupBuyActivityEntity;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -22,4 +23,7 @@ public interface IActivityRepository {
     boolean downgradeSwitch();
 
     boolean cutRange(String userId);
+
+
+
 }

@@ -5,6 +5,7 @@ import cn.bugstack.domain.activity.model.valobj.DiscountTypeEnum;
 import cn.bugstack.domain.activity.model.valobj.GroupBuyActivityDiscountVO;
 import cn.bugstack.domain.activity.model.valobj.SCSkuActivityVO;
 import cn.bugstack.domain.activity.model.valobj.SkuVO;
+import cn.bugstack.domain.trade.model.entity.GroupBuyActivityEntity;
 import cn.bugstack.infrastructure.dao.IGroupBuyActivityDao;
 import cn.bugstack.infrastructure.dao.IGroupBuyDiscountDao;
 import cn.bugstack.infrastructure.dao.ISCSkuActivityDao;
@@ -126,5 +127,6 @@ public class ActivityRepository implements IActivityRepository {
     public boolean cutRange(String userId) {
         return dccService.isCutRange(userId);
     }
+
 
 }
