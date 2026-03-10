@@ -5,7 +5,6 @@ import cn.bugstack.domain.trade.model.entity.PayActivityEntity;
 import cn.bugstack.domain.trade.model.entity.PayDiscountEntity;
 import cn.bugstack.domain.trade.model.entity.UserEntity;
 import cn.bugstack.domain.trade.model.valobj.GroupBuyProgressVO;
-import org.springframework.stereotype.Service;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service;
  * @create 2025-01-05 16:42
  */
 
-public interface ITradeOrderService {
+public interface ITradeLockOrderService {
 
     /**
      * 查询，未被支付消费完成的营销优惠订单
