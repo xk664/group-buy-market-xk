@@ -66,7 +66,7 @@ public class ITradeLockOrderServiceTest {
         MarketPayOrderEntity marketPayOrderEntityNew = tradeOrderService.lockMarketPayOrder(
                 UserEntity.builder().userId(userId).build(),
                 PayActivityEntity.builder()
-                        .teamId("16573219")
+                        .teamId("93125665")
                         .activityId(groupBuyActivityDiscountVO.getActivityId())
                         .activityName(groupBuyActivityDiscountVO.getActivityName())
                         .startTime(groupBuyActivityDiscountVO.getStartTime())

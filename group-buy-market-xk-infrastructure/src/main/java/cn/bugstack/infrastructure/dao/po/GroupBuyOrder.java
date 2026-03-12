@@ -47,5 +47,9 @@ public class GroupBuyOrder {
     private Date createTime;
     /** 更新时间 */
     private Date updateTime;
+    /** 拼团开始时间  */
+    private Date validStartTime;
+    /** 拼团结束时间 */
+    private Date validEndTime;
 
 }
