@@ -24,6 +24,7 @@ public class EndRuleFilter implements ILogicHandler<TradeSettlementRuleCommandEn
                 .validEndTime(dynamicContext.getGroupBuyTeamEntity().getValidEndTime())
                 .teamId(dynamicContext.getGroupBuyTeamEntity().getTeamId())
                 .activityId(dynamicContext.getGroupBuyTeamEntity().getActivityId())
+                .notifyUrl(dynamicContext.getGroupBuyTeamEntity().getNotifyUrl())
                 .build();
     }
 }

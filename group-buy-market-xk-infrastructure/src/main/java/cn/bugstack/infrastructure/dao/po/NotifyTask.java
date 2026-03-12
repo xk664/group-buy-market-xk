@@ -36,5 +36,4 @@ public class NotifyTask {
     private Date createTime;
     /** 更新时间 */
     private Date updateTime;
-
 }
