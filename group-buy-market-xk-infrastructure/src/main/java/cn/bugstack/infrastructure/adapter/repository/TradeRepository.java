@@ -1,6 +1,7 @@
 package cn.bugstack.infrastructure.adapter.repository;
 
 import cn.bugstack.api.IDCCService;
+import cn.bugstack.domain.activity.model.entity.UserGroupBuyOrderDetailEntity;
 import cn.bugstack.domain.trade.adapter.repository.ITradeRepository;
 import cn.bugstack.domain.trade.model.aggregate.GroupBuyOrderAggregate;
 import cn.bugstack.domain.trade.model.aggregate.GroupBuyTeamSettlementAggregate;
@@ -236,6 +237,8 @@ public class TradeRepository implements ITradeRepository {
     public int updateNotifyTaskStatusRetry(String teamId) {
         return notifyTaskDao.updateNotifyTaskStatusRetry(teamId);
     }
+
+
 
 
     @Transactional(timeout = 500)

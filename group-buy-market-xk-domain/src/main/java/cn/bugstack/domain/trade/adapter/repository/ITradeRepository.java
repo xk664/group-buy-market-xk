@@ -1,5 +1,6 @@
 package cn.bugstack.domain.trade.adapter.repository;
 
+import cn.bugstack.domain.activity.model.entity.UserGroupBuyOrderDetailEntity;
 import cn.bugstack.domain.trade.model.aggregate.GroupBuyOrderAggregate;
 import cn.bugstack.domain.trade.model.aggregate.GroupBuyTeamSettlementAggregate;
 import cn.bugstack.domain.trade.model.entity.GroupBuyActivityEntity;
@@ -35,4 +36,6 @@ public interface ITradeRepository {
     int updateNotifyTaskStatusError(String teamId);
 
     int updateNotifyTaskStatusRetry(String teamId);
+
+
 }

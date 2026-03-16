@@ -53,5 +53,7 @@ public class GroupBuyOrderList {
     private Date createTime;
     /** 更新时间 */
     private Date updateTime;
+    /** 用户拼团数量 **/
+    private  Integer count;
 
 }
