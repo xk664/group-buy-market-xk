@@ -44,6 +44,8 @@ public class GroupBuyOrderList {
     /** 折扣金额 */
     private BigDecimal deductionPrice;
     /** 状态；0初始锁定、1消费完成 */
+    /** 支付金额 */
+    private BigDecimal payPrice;
     private Integer status;
     /** 外部交易单号-确保外部调用唯一幂等 */
     private String outTradeNo;

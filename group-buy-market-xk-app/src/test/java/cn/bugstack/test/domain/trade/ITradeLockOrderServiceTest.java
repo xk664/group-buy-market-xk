@@ -66,10 +66,11 @@ public class ITradeLockOrderServiceTest {
         MarketPayOrderEntity marketPayOrderEntityNew = tradeOrderService.lockMarketPayOrder(
                 UserEntity.builder().userId(userId).build(),
                 PayActivityEntity.builder()
-                        .teamId("93125665")
+                        .teamId(null)
                         .activityId(groupBuyActivityDiscountVO.getActivityId())
                         .activityName(groupBuyActivityDiscountVO.getActivityName())
                         .startTime(groupBuyActivityDiscountVO.getStartTime())
+                        .validTime(15)
                         .endTime(groupBuyActivityDiscountVO.getEndTime())
                         .targetCount(groupBuyActivityDiscountVO.getTarget())
                         .build(),
@@ -80,7 +81,9 @@ public class ITradeLockOrderServiceTest {
                         .goodsName(trialBalanceEntity.getGoodsName())
                         .originalPrice(trialBalanceEntity.getOriginalPrice())
                         .deductionPrice(trialBalanceEntity.getDeductionPrice())
+                        .payPrice(trialBalanceEntity.getPayPrice())
                         .outTradeNo(outTradeNo)
+                        .notifyUrl("http://127.0.0.1:8091/api/v1/test/group_buy_notify")
                         .build());
 
         log.info("测试结果(New):{}",JSON.toJSONString(marketPayOrderEntityNew));

@@ -13,27 +13,15 @@
         <result column="pay_price" property="payPrice"/>
         <result column="target_count" property="targetCount"/>
         <result column="complete_count" property="completeCount"/>
+        <result column="lock_count" property="lockCount"/>
+        <result column="status" property="status"/>
         <result column="valid_start_time" property="validStartTime"/>
         <result column="valid_end_time" property="validEndTime"/>
         <result column="notify_url" property="notifyUrl"/>
-        <result column="lock_count" property="lockCount"/>
-        <result column="status" property="status"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
     </resultMap>
 
-    <update id="updateAddCompleteCount" parameterType="java.lang.String">
-        <![CDATA[
-        update group_buy_order
-        set complete_count = complete_count + 1, update_time= now()
-        where team_id = #{teamId} and complete_count < target_count
-        ]]>
-    </update>
-    <update id="updateOrderStatus2COMPLETE" parameterType="java.lang.String">
-        update group_buy_order
-        set status = 1, update_time= now()
-        where team_id = #{teamId} and status = 0
-    </update>
     <insert id="insert" parameterType="cn.bugstack.infrastructure.dao.po.GroupBuyOrder">
         insert into group_buy_order(
             team_id, activity_id, source, channel, original_price,
@@ -48,9 +36,17 @@
 
     <update id="updateAddLockCount" parameterType="java.lang.String">
         <![CDATA[
-            update group_buy_order
-            set lock_count = lock_count + 1, update_time= now()
-            where team_id = #{teamId} and lock_count < target_count
+        update group_buy_order
+        set lock_count = lock_count + 1, update_time= now()
+        where team_id = #{teamId} and lock_count < target_count
+        ]]>
+    </update>
+
+    <update id="updateAddCompleteCount" parameterType="java.lang.String">
+        <![CDATA[
+        update group_buy_order
+        set complete_count = complete_count + 1, update_time= now()
+        where team_id = #{teamId} and complete_count < target_count
         ]]>
     </update>
 
@@ -60,23 +56,33 @@
         where team_id = #{teamId} and lock_count > 0
     </update>
 
+    <update id="updateOrderStatus2COMPLETE" parameterType="java.lang.String">
+        update group_buy_order
+        set status = 1, update_time= now()
+        where team_id = #{teamId} and status = 0
+    </update>
+
     <select id="queryGroupBuyProgress" parameterType="java.lang.String" resultMap="dataMap">
         select target_count, complete_count, lock_count from group_buy_order
         where team_id = #{teamId}
     </select>
+
     <select id="queryGroupBuyTeamByTeamId" parameterType="java.lang.String" resultMap="dataMap">
-        select team_id, activity_id, target_count, complete_count, lock_count, status, valid_start_time, valid_end_time, notify_url
+        select team_id, activity_id, target_count, complete_count, lock_count, status, valid_start_time, valid_end_time,
+               notify_url
         from group_buy_order where team_id = #{teamId}
     </select>
+
     <select id="queryGroupBuyProgressByTeamIds" parameterType="java.util.Set" resultMap="dataMap">
         select team_id, activity_id, target_count, complete_count, lock_count, status, valid_start_time, valid_end_time,
         notify_url
         from group_buy_order
-        where status = 0 and target_count > lock_count and team_id in
+        where status = 0 and target_count > lock_count and valid_end_time > now() and team_id in
         <foreach item="teamId" collection="teamIds" open="(" separator="," close=")">
             #{teamId}
         </foreach>
     </select>
+
     <select id="queryAllTeamCount" parameterType="java.util.Set" resultType="java.lang.Integer">
         select count(id) from group_buy_order
         where team_id in
@@ -84,6 +90,7 @@
             #{teamId}
         </foreach>
     </select>
+
     <select id="queryAllTeamCompleteCount" parameterType="java.util.Set" resultType="java.lang.Integer">
         select count(id) from group_buy_order
         where status = 1 and team_id in
@@ -91,6 +98,7 @@
             #{teamId}
         </foreach>
     </select>
+
     <select id="queryAllUserCount" parameterType="java.util.Set" resultType="java.lang.Integer">
         select sum(lock_count) from group_buy_order
         where team_id in
@@ -98,4 +106,5 @@
             #{teamId}
         </foreach>
     </select>
+
 </mapper>
