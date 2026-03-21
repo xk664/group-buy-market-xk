@@ -13,6 +13,8 @@ import cn.bugstack.domain.trade.model.entity.PayActivityEntity;
 import cn.bugstack.domain.trade.model.entity.PayDiscountEntity;
 import cn.bugstack.domain.trade.model.entity.UserEntity;
 import cn.bugstack.domain.trade.model.valobj.GroupBuyProgressVO;
+import cn.bugstack.domain.trade.model.valobj.NotifyConfigVO;
+import cn.bugstack.domain.trade.model.valobj.NotifyTypeEnumVO;
 import cn.bugstack.domain.trade.service.ITradeLockOrderService;
 import cn.bugstack.types.enums.ResponseCode;
 import cn.bugstack.types.exception.AppException;
@@ -54,11 +56,11 @@ public class MarketTradeController implements IMarketTradeService {
             Long activityId = lockMarketPayOrderRequestDTO.getActivityId();
             String outTradeNo = lockMarketPayOrderRequestDTO.getOutTradeNo();
             String teamId = lockMarketPayOrderRequestDTO.getTeamId();
-            String notifyUrl = lockMarketPayOrderRequestDTO.getNotifyUrl();
+            LockMarketPayOrderRequestDTO.NotifyConfigVO notifyConfigVO = lockMarketPayOrderRequestDTO.getNotifyConfigVO();
 
             log.info("营销交易锁单:{} LockMarketPayOrderRequestDTO:{}", userId, JSON.toJSONString(lockMarketPayOrderRequestDTO));
 
-            if (StringUtils.isBlank(userId) || StringUtils.isBlank(source) || StringUtils.isBlank(channel) || StringUtils.isBlank(goodsId) || StringUtils.isBlank(goodsId) || null == activityId||StringUtils.isBlank(notifyUrl)) {
+            if (StringUtils.isBlank(userId) || StringUtils.isBlank(source) || StringUtils.isBlank(channel) || StringUtils.isBlank(goodsId) || StringUtils.isBlank(goodsId) || null == activityId||StringUtils.isBlank(notifyConfigVO.getNotifyUrl())&&"HTTP".equals(notifyConfigVO.getNotifyType())) {
                 return Response.<LockMarketPayOrderResponseDTO>builder()
                         .code(ResponseCode.ILLEGAL_PARAMETER.getCode())
                         .info(ResponseCode.ILLEGAL_PARAMETER.getInfo())
@@ -133,7 +135,13 @@ public class MarketTradeController implements IMarketTradeService {
                             .goodsName(trialBalanceEntity.getGoodsName())
                             .originalPrice(trialBalanceEntity.getOriginalPrice())
                             .deductionPrice(trialBalanceEntity.getDeductionPrice())
-                            .notifyUrl(notifyUrl)
+                            .notifyConfigVO(
+                                    NotifyConfigVO.builder()
+                                            .notifyUrl(notifyConfigVO.getNotifyUrl())
+                                            .notifyType(NotifyTypeEnumVO.valueOf(notifyConfigVO.getNotifyType()))
+                                            .notifyMQ(notifyConfigVO.getNotifyMQ())
+                                            .build()
+                            )
                             .payPrice(trialBalanceEntity.getPayPrice())
                             .outTradeNo(outTradeNo)
                             .build());

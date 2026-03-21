@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.annotation.Resource;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author Fuzhengwei bugstack.cn @小傅哥
@@ -28,14 +29,32 @@ public class MarketTradeControllerTest {
     private IMarketTradeService marketTradeService;
 
     @Test
-    public void test_lockMarketPayOrder() {
+    public void test_lockMarketPayOrder_mq() throws InterruptedException {
         LockMarketPayOrderRequestDTO lockMarketPayOrderRequestDTO = new LockMarketPayOrderRequestDTO();
-        lockMarketPayOrderRequestDTO.setUserId("xiaofuge");
+        lockMarketPayOrderRequestDTO.setUserId("xfg03");
         lockMarketPayOrderRequestDTO.setTeamId(null);
         lockMarketPayOrderRequestDTO.setActivityId(100123L);
         lockMarketPayOrderRequestDTO.setGoodsId("9890001");
         lockMarketPayOrderRequestDTO.setSource("s01");
         lockMarketPayOrderRequestDTO.setChannel("c01");
+        lockMarketPayOrderRequestDTO.setNotifyMQ();
+        lockMarketPayOrderRequestDTO.setOutTradeNo(RandomStringUtils.randomNumeric(12));
+
+        Response<LockMarketPayOrderResponseDTO> lockMarketPayOrderResponseDTOResponse = marketTradeService.lockMarketPayOrder(lockMarketPayOrderRequestDTO);
+
+        log.info("测试结果 req:{} res:{}", JSON.toJSONString(lockMarketPayOrderRequestDTO), JSON.toJSONString(lockMarketPayOrderResponseDTOResponse));
+    }
+
+    @Test
+    public void test_lockMarketPayOrder() {
+        LockMarketPayOrderRequestDTO lockMarketPayOrderRequestDTO = new LockMarketPayOrderRequestDTO();
+        lockMarketPayOrderRequestDTO.setUserId("xfg03");
+        lockMarketPayOrderRequestDTO.setTeamId(null);
+        lockMarketPayOrderRequestDTO.setActivityId(100123L);
+        lockMarketPayOrderRequestDTO.setGoodsId("9890001");
+        lockMarketPayOrderRequestDTO.setSource("s01");
+        lockMarketPayOrderRequestDTO.setChannel("c01");
+        lockMarketPayOrderRequestDTO.setNotifyUrl("http://127.0.0.1:8091/api/v1/test/group_buy_notify");
         lockMarketPayOrderRequestDTO.setOutTradeNo(RandomStringUtils.randomNumeric(12));
 
         Response<LockMarketPayOrderResponseDTO> lockMarketPayOrderResponseDTOResponse = marketTradeService.lockMarketPayOrder(lockMarketPayOrderRequestDTO);
@@ -46,17 +65,38 @@ public class MarketTradeControllerTest {
     @Test
     public void test_lockMarketPayOrder_teamId_not_null() {
         LockMarketPayOrderRequestDTO lockMarketPayOrderRequestDTO = new LockMarketPayOrderRequestDTO();
-        lockMarketPayOrderRequestDTO.setUserId("xiaofuge");
-        lockMarketPayOrderRequestDTO.setTeamId("90836926");
+        lockMarketPayOrderRequestDTO.setUserId("xfg03");
+        lockMarketPayOrderRequestDTO.setTeamId("80759049");
         lockMarketPayOrderRequestDTO.setActivityId(100123L);
         lockMarketPayOrderRequestDTO.setGoodsId("9890001");
         lockMarketPayOrderRequestDTO.setSource("s01");
         lockMarketPayOrderRequestDTO.setChannel("c01");
+        lockMarketPayOrderRequestDTO.setNotifyUrl("http://127.0.0.1:8091/api/v1/test/group_buy_notify");
         lockMarketPayOrderRequestDTO.setOutTradeNo(RandomStringUtils.randomNumeric(12));
 
         Response<LockMarketPayOrderResponseDTO> lockMarketPayOrderResponseDTOResponse = marketTradeService.lockMarketPayOrder(lockMarketPayOrderRequestDTO);
 
         log.info("测试结果 req:{} res:{}", JSON.toJSONString(lockMarketPayOrderRequestDTO), JSON.toJSONString(lockMarketPayOrderResponseDTOResponse));
+    }
+
+    @Test
+    public void test_lockMarketPayOrder_list() {
+        for (int i = 1; i < 2; i++) {
+            LockMarketPayOrderRequestDTO lockMarketPayOrderRequestDTO = new LockMarketPayOrderRequestDTO();
+            lockMarketPayOrderRequestDTO.setUserId("xfg0" + i);
+            lockMarketPayOrderRequestDTO.setTeamId(null);
+            lockMarketPayOrderRequestDTO.setActivityId(100123L);
+            lockMarketPayOrderRequestDTO.setGoodsId("9890001");
+            lockMarketPayOrderRequestDTO.setSource("s01");
+            lockMarketPayOrderRequestDTO.setChannel("c01");
+            lockMarketPayOrderRequestDTO.setNotifyUrl("http://127.0.0.1:8091/api/v1/test/group_buy_notify");
+            lockMarketPayOrderRequestDTO.setOutTradeNo(RandomStringUtils.randomNumeric(12));
+
+            Response<LockMarketPayOrderResponseDTO> lockMarketPayOrderResponseDTOResponse = marketTradeService.lockMarketPayOrder(lockMarketPayOrderRequestDTO);
+
+            log.info("测试结果 req:{} res:{}", JSON.toJSONString(lockMarketPayOrderRequestDTO), JSON.toJSONString(lockMarketPayOrderResponseDTOResponse));
+        }
+
     }
 
 }

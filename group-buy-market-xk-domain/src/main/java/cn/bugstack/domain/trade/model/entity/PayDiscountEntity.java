@@ -1,5 +1,6 @@
 package cn.bugstack.domain.trade.model.entity;
 
+import cn.bugstack.domain.trade.model.valobj.NotifyConfigVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,11 +31,11 @@ public class PayDiscountEntity {
     private BigDecimal originalPrice;
     /** 折扣金额 */
     private BigDecimal deductionPrice;
-    /** 支付金额**/
+    /** 支付金额 */
     private BigDecimal payPrice;
     /** 外部交易单号-确保外部调用唯一幂等 */
     private String outTradeNo;
-    /** 回调接口 */
-    private String notifyUrl;
+    /** 回调配置 */
+    private NotifyConfigVO notifyConfigVO;
 
 }
