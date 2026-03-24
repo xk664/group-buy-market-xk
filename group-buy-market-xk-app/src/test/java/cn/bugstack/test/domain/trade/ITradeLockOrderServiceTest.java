@@ -8,8 +8,6 @@ import cn.bugstack.domain.trade.model.entity.MarketPayOrderEntity;
 import cn.bugstack.domain.trade.model.entity.PayActivityEntity;
 import cn.bugstack.domain.trade.model.entity.PayDiscountEntity;
 import cn.bugstack.domain.trade.model.entity.UserEntity;
-import cn.bugstack.domain.trade.model.valobj.NotifyConfigVO;
-import cn.bugstack.domain.trade.model.valobj.NotifyTypeEnumVO;
 import cn.bugstack.domain.trade.service.ITradeLockOrderService;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -40,11 +38,11 @@ public class ITradeLockOrderServiceTest {
     public void test_lockMarketPayOrder() throws Exception {
         // 入参信息
         Long activityId = 100123L;
-        String userId = "xfg04";
+        String userId = "xiaofuge";
         String goodsId = "9890001";
         String source = "s01";
         String channel = "c01";
-        String outTradeNo = "1234567";
+        String outTradeNo = "909000098111";
 
         // 1. 获取试算优惠，有【activityId】优先使用
         TrialBalanceEntity trialBalanceEntity = indexGroupBuyMarketService.indexMarketTrial(MarketProductEntity.builder()
@@ -72,7 +70,6 @@ public class ITradeLockOrderServiceTest {
                         .activityId(groupBuyActivityDiscountVO.getActivityId())
                         .activityName(groupBuyActivityDiscountVO.getActivityName())
                         .startTime(groupBuyActivityDiscountVO.getStartTime())
-                        .validTime(15)
                         .endTime(groupBuyActivityDiscountVO.getEndTime())
                         .targetCount(groupBuyActivityDiscountVO.getTarget())
                         .build(),
@@ -83,11 +80,7 @@ public class ITradeLockOrderServiceTest {
                         .goodsName(trialBalanceEntity.getGoodsName())
                         .originalPrice(trialBalanceEntity.getOriginalPrice())
                         .deductionPrice(trialBalanceEntity.getDeductionPrice())
-                        .payPrice(trialBalanceEntity.getPayPrice())
                         .outTradeNo(outTradeNo)
-                        .notifyConfigVO(NotifyConfigVO.builder()
-                                .notifyType(NotifyTypeEnumVO.MQ)
-                                .build())
                         .build());
 
         log.info("测试结果(New):{}",JSON.toJSONString(marketPayOrderEntityNew));
