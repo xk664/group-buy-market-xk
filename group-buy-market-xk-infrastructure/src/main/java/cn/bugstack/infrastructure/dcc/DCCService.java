@@ -27,6 +27,11 @@ public class DCCService {
     @DCCValue("scBlacklist:s02c02")
     private String scBlacklist;
 
+    @DCCValue("cacheOpenSwitch:0")
+    private String cacheOpenSwitch;
+    public  boolean isCacheOpenSwitch() {
+        return "0".equals(cacheOpenSwitch);
+    }
     public boolean isDowngradeSwitch() {
         return "1".equals(downgradeSwitch);
     }
