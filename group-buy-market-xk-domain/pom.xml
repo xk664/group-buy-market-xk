@@ -30,6 +30,11 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
         </dependency>
+        <!-- xfg wrench dcc 动态配置中心 -->
+        <dependency>
+            <groupId>cn.bugstack.wrench</groupId>
+            <artifactId>xfg-wrench-starter-design-framework</artifactId>
+        </dependency>
         <dependency>
             <groupId>cn.bugstack</groupId>
             <artifactId>group-buy-market-xk-api</artifactId>

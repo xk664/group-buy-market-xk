@@ -7,7 +7,8 @@ import cn.bugstack.domain.activity.model.entity.UserGroupBuyOrderDetailEntity;
 import cn.bugstack.domain.activity.model.valobj.TeamStatisticVO;
 import cn.bugstack.domain.activity.service.trial.factory.DefaultActivityStrategyFactory;
 import cn.bugstack.domain.trade.adapter.repository.ITradeRepository;
-import cn.bugstack.types.design.framework.tree.StrategyHandler;
+
+import cn.bugstack.wrench.design.framework.tree.StrategyHandler;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

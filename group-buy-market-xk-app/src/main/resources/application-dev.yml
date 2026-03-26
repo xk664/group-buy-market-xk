@@ -71,6 +71,16 @@ redis:
       retry-interval: 1000
       ping-interval: 60000
       keep-alive: true
+# 小傅哥扳手通用组件配置
+xfg:
+  wrench:
+    config:
+      system: group-buy-market
+      register:
+        # redis host
+        host: 192.168.232.128
+        # redis port
+        port: 16379
 # 日志
 logging:
   level:

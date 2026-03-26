@@ -1,7 +1,8 @@
 package cn.bugstack.infrastructure.dcc;
 
-import cn.bugstack.types.annotations.DCCValue;
+
 import cn.bugstack.types.common.Constants;
+import cn.bugstack.wrench.dynamic.config.center.types.annotations.DCCValue;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
