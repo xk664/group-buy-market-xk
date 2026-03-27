@@ -29,6 +29,8 @@ spring:
     connection-timeout: 30000 #数据库连接超时时间,默认30秒，即30000
     connection-test-query: SELECT 1
   type: com.zaxxer.hikari.HikariDataSource
+
+
   # RabbitMQ
   rabbitmq:
     addresses: 192.168.232.128
@@ -81,6 +83,9 @@ xfg:
         host: 192.168.232.128
         # redis port
         port: 16379
+# 日志；logstash部署的服务器IP
+logstash:
+  host: 192.168.232.128
 # 日志
 logging:
   level:
