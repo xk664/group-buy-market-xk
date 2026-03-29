@@ -52,6 +52,7 @@ public class TradeRefundOrderService implements ITradeRefundOrderService {
         IRefundOrderStrategy refundOrderStrategy = refundOrderStrategyMap.get(refundType.getStrategy());
         refundOrderStrategy.refundOrder(TradeRefundOrderEntity.builder()
                 .userId(tradeRefundCommandEntity.getUserId())
+                .activityId(groupBuyTeamEntity.getActivityId())
                 .orderId(orderId)
                 .teamId(teamId)
                 .build());
