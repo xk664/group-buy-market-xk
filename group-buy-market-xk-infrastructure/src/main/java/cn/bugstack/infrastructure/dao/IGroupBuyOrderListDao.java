@@ -28,4 +28,6 @@ public interface IGroupBuyOrderListDao {
     List<GroupBuyOrderList> queryInProgressUserGroupBuyOrderDetailListByRandom(GroupBuyOrderList groupBuyOrderListReq);
 
     List<GroupBuyOrderList> queryInProgressUserGroupBuyOrderDetailListByActivityId(Long activityId);
+
+    int unpaid2Refund(GroupBuyOrderList groupBuyOrderListReq);
 }

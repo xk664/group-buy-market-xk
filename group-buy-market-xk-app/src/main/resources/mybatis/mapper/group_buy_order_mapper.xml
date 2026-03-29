@@ -62,6 +62,13 @@
         set status = 1, update_time= now()
         where team_id = #{teamId} and status = 0
     </update>
+    <update id="unpaid2Refund" parameterType="cn.bugstack.infrastructure.dao.po.GroupBuyOrder">
+        update group_buy_order
+        set lock_count = lock_count + #{lockCount}, update_time= now()
+        where
+            team_id = #{teamId} and
+            status = 0
+    </update>
 
     <select id="queryGroupBuyProgress" parameterType="java.lang.String" resultMap="dataMap">
         select target_count, complete_count, lock_count from group_buy_order
