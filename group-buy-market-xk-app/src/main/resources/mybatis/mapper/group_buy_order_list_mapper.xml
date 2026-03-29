@@ -69,6 +69,14 @@
             order_id = #{orderId} and
             status = 1
     </update>
+    <update id="paidTeam2Refund" parameterType="cn.bugstack.infrastructure.dao.po.GroupBuyOrderList">
+        update group_buy_order_list
+        set status = 2, update_time = now()
+        where
+            user_id = #{userId} and
+            order_id = #{orderId} and
+            status = 1
+    </update>
     <select id="queryGroupBuyCompleteOrderOutTradeNoListByTeamId" parameterType="java.lang.String" resultType="java.lang.String">
         select out_trade_no from group_buy_order_list where team_id = #{teamId} and status = 1
     </select>
