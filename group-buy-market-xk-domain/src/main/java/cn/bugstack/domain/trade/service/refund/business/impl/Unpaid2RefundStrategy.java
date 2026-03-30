@@ -1,15 +1,12 @@
 package cn.bugstack.domain.trade.service.refund.business.impl;
 
-import cn.bugstack.domain.trade.adapter.repository.ITradeRepository;
 import cn.bugstack.domain.trade.model.aggregate.GroupBuyRefundAggregate;
+import cn.bugstack.domain.trade.model.entity.NotifyTaskEntity;
 import cn.bugstack.domain.trade.model.entity.TradeRefundOrderEntity;
 import cn.bugstack.domain.trade.model.valobj.TeamRefundSuccess;
-import cn.bugstack.domain.trade.service.lock.factory.TradeLockRuleFilterFactory;
-import cn.bugstack.domain.trade.service.refund.business.IRefundOrderStrategy;
+import cn.bugstack.domain.trade.service.refund.business.AbstractRefundOrderStrategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 
 /**
  * 未支付，未成团；发起退单（未支付），锁单量-1、组队订单状态更新
@@ -19,24 +16,21 @@ import javax.annotation.Resource;
  */
 @Slf4j
 @Service("unpaid2RefundStrategy")
-public class Unpaid2RefundStrategy implements IRefundOrderStrategy {
-
-    @Resource
-    private ITradeRepository repository;
+public class Unpaid2RefundStrategy extends AbstractRefundOrderStrategy {
 
     @Override
     public void refundOrder(TradeRefundOrderEntity tradeRefundOrderEntity) {
         log.info("退单；未支付，未成团 userId:{} teamId:{} orderId:{}", tradeRefundOrderEntity.getUserId(), tradeRefundOrderEntity.getTeamId(), tradeRefundOrderEntity.getOrderId());
-        repository.unpaid2Refund(GroupBuyRefundAggregate.buildUnpaid2RefundAggregate(tradeRefundOrderEntity, -1));
+        // 1. 退单；未支付，未成团
+        NotifyTaskEntity notifyTaskEntity = repository.unpaid2Refund(GroupBuyRefundAggregate.buildUnpaid2RefundAggregate(tradeRefundOrderEntity, -1));
+
+        // 2. 发送MQ消息 - 发送MQ，恢复锁单库存量使用
+        sendRefundNotifyMessage(notifyTaskEntity, "未支付，未成团");
     }
 
     @Override
-    public void reverseStock(TeamRefundSuccess teamRefundSuccess) {
-        log.info("退单；恢复锁单量 - 已支付，未成团，但有锁单记录，要恢复锁单库存 {} {} {}", teamRefundSuccess.getUserId(), teamRefundSuccess.getActivityId(), teamRefundSuccess.getTeamId());
-        // 1. 恢复库存key
-        String recoveryTeamStockKey = TradeLockRuleFilterFactory.generateRecoveryTeamStockKey(teamRefundSuccess.getActivityId(), teamRefundSuccess.getTeamId());
-        // 2. 退单恢复「已支付，未成团，有锁单记录，要恢复锁单库存」
-        repository.refund2AddRecovery(recoveryTeamStockKey, teamRefundSuccess.getOrderId());
+    public void reverseStock(TeamRefundSuccess teamRefundSuccess) throws Exception {
+        doReverseStock(teamRefundSuccess, "未支付，未成团，但有锁单记录，要恢复锁单库存");
     }
 
 }

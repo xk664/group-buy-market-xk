@@ -5,7 +5,7 @@ import cn.bugstack.domain.trade.model.entity.TradeRefundCommandEntity;
 import cn.bugstack.domain.trade.model.valobj.TeamRefundSuccess;
 
 public interface ITradeRefundOrderService {
-    TradeRefundBehaviorEntity refundOrder(TradeRefundCommandEntity tradeRefundCommandEntity);
+    TradeRefundBehaviorEntity refundOrder(TradeRefundCommandEntity tradeRefundCommandEntity) throws Exception;
 
-    void restoreTeamLockStock(TeamRefundSuccess teamRefundSuccess);
+    void restoreTeamLockStock(TeamRefundSuccess teamRefundSuccess) throws Exception;
 }

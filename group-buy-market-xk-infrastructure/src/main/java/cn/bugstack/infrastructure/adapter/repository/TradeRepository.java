@@ -298,7 +298,7 @@ public class TradeRepository implements ITradeRepository {
 
     @Override
     @Transactional(timeout = 5000)
-    public void unpaid2Refund(GroupBuyRefundAggregate groupBuyRefundAggregate) {
+    public NotifyTaskEntity unpaid2Refund(GroupBuyRefundAggregate groupBuyRefundAggregate) {
         TradeRefundOrderEntity tradeRefundOrderEntity = groupBuyRefundAggregate.getTradeRefundOrderEntity();
         GroupBuyProgressVO groupBuyProgress = groupBuyRefundAggregate.getGroupBuyProgress();
 
@@ -309,7 +309,7 @@ public class TradeRepository implements ITradeRepository {
 
         int updateUnpaid2RefundCount = groupBuyOrderListDao.unpaid2Refund(groupBuyOrderListReq);
         if (1 != updateUnpaid2RefundCount) {
-            log.error("逆向流程，更新订单状态(退单)失败 {} {}", tradeRefundOrderEntity.getUserId(), tradeRefundOrderEntity.getOrderId());
+            log.error("逆向流程-unpaid2Refund，更新订单状态(退单)失败 {} {}", tradeRefundOrderEntity.getUserId(), tradeRefundOrderEntity.getOrderId());
             throw new AppException(ResponseCode.UPDATE_ZERO);
         }
 
@@ -319,12 +319,41 @@ public class TradeRepository implements ITradeRepository {
 
         int updateTeamUnpaid2Refund = groupBuyOrderDao.unpaid2Refund(groupBuyOrderReq);
         if (1 != updateTeamUnpaid2Refund) {
-            log.error("逆向流程，更新组队记录(退单)失败 {} {}", tradeRefundOrderEntity.getUserId(), tradeRefundOrderEntity.getOrderId());
+            log.error("逆向流程-unpaid2Refund，更新组队记录(退单)失败 {} {}", tradeRefundOrderEntity.getUserId(), tradeRefundOrderEntity.getOrderId());
             throw new AppException(ResponseCode.UPDATE_ZERO);
         }
 
-        // 逆向后，还要处理 redis recoveryCount 恢复了，这部分最后统一处理
+        // 本地消息任务表
+        NotifyTask notifyTask = new NotifyTask();
+        notifyTask.setActivityId(tradeRefundOrderEntity.getActivityId());
+        notifyTask.setTeamId(tradeRefundOrderEntity.getTeamId());
+        notifyTask.setNotifyCategory(TaskNotifyCategoryEnumVO.TRADE_UNPAID2REFUND.getCode());
+        notifyTask.setNotifyType(NotifyTypeEnumVO.MQ.getCode());
+        notifyTask.setNotifyMQ(topic_team_refund);
+        notifyTask.setNotifyCount(0);
+        notifyTask.setNotifyStatus(0);
+        notifyTask.setUuid(tradeRefundOrderEntity.getTeamId() + Constants.UNDERLINE + TaskNotifyCategoryEnumVO.TRADE_UNPAID2REFUND.getCode() + Constants.UNDERLINE + tradeRefundOrderEntity.getOrderId());
+
+        notifyTask.setParameterJson(JSON.toJSONString(new HashMap<String, Object>() {{
+            put("type", RefundTypeEnumVO.UNPAID_UNLOCK.getCode());
+            put("userId", tradeRefundOrderEntity.getUserId());
+            put("teamId", tradeRefundOrderEntity.getTeamId());
+            put("orderId", tradeRefundOrderEntity.getOrderId());
+            put("activityId", tradeRefundOrderEntity.getActivityId());
+        }}));
+
+        notifyTaskDao.insert(notifyTask);
+
+        return NotifyTaskEntity.builder()
+                .teamId(notifyTask.getTeamId())
+                .notifyType(notifyTask.getNotifyType())
+                .notifyMQ(notifyTask.getNotifyMQ())
+                .notifyCount(notifyTask.getNotifyCount())
+                .parameterJson(notifyTask.getParameterJson())
+                .uuid(notifyTask.getUuid())
+                .build();
     }
+
 
     @Override
     @Transactional(timeout = 5000)
