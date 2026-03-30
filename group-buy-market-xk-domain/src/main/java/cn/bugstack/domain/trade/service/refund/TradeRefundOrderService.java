@@ -3,6 +3,7 @@ package cn.bugstack.domain.trade.service.refund;
 import cn.bugstack.domain.trade.adapter.repository.ITradeRepository;
 import cn.bugstack.domain.trade.model.entity.*;
 import cn.bugstack.domain.trade.model.valobj.RefundTypeEnumVO;
+import cn.bugstack.domain.trade.model.valobj.TeamRefundSuccess;
 import cn.bugstack.domain.trade.model.valobj.TradeOrderStatusEnumVO;
 import cn.bugstack.domain.trade.service.ITradeRefundOrderService;
 import cn.bugstack.domain.trade.service.refund.business.IRefundOrderStrategy;
@@ -52,9 +53,9 @@ public class TradeRefundOrderService implements ITradeRefundOrderService {
         IRefundOrderStrategy refundOrderStrategy = refundOrderStrategyMap.get(refundType.getStrategy());
         refundOrderStrategy.refundOrder(TradeRefundOrderEntity.builder()
                 .userId(tradeRefundCommandEntity.getUserId())
-                .activityId(groupBuyTeamEntity.getActivityId())
                 .orderId(orderId)
                 .teamId(teamId)
+                .activityId(groupBuyTeamEntity.getActivityId())
                 .build());
 
         return TradeRefundBehaviorEntity.builder()
@@ -63,5 +64,16 @@ public class TradeRefundOrderService implements ITradeRefundOrderService {
                 .teamId(teamId)
                 .tradeRefundBehaviorEnum(TradeRefundBehaviorEntity.TradeRefundBehaviorEnum.SUCCESS)
                 .build();
+    }
+
+    @Override
+    public void restoreTeamLockStock(TeamRefundSuccess teamRefundSuccess) {
+        log.info("逆向流程，恢复锁单量 userId:{} activityId:{} teamId:{}", teamRefundSuccess.getUserId(), teamRefundSuccess.getActivityId(), teamRefundSuccess.getTeamId());
+        //获取退单类型
+        String type = teamRefundSuccess.getType();
+
+        RefundTypeEnumVO refundTypeEnumVOByCode = RefundTypeEnumVO.getRefundTypeEnumVOByCode(type);
+        IRefundOrderStrategy iRefundOrderStrategy = refundOrderStrategyMap.get(refundTypeEnumVOByCode.getStrategy());
+        iRefundOrderStrategy.reverseStock(teamRefundSuccess);
     }
 }

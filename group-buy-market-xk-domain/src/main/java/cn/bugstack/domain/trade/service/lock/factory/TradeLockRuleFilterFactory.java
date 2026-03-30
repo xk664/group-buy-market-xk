@@ -6,7 +6,6 @@ import cn.bugstack.domain.trade.model.entity.TradeLockRuleFilterBackEntity;
 import cn.bugstack.domain.trade.service.lock.filter.ActivityUsabilityRuleFilter;
 import cn.bugstack.domain.trade.service.lock.filter.TeamStockOccupyRuleFilter;
 import cn.bugstack.domain.trade.service.lock.filter.UserTakeLimitRuleFilter;
-
 import cn.bugstack.wrench.design.framework.link.model2.LinkArmory;
 import cn.bugstack.wrench.design.framework.link.model2.chain.BusinessLinkedList;
 import lombok.AllArgsConstructor;
@@ -26,6 +25,8 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class TradeLockRuleFilterFactory {
+
+    private static final String teamStockKey = "group_buy_market_team_stock_key_";
 
     @Bean("tradeRuleFilter")
     public BusinessLinkedList<TradeLockRuleCommandEntity, DynamicContext, TradeLockRuleFilterBackEntity> tradeRuleFilter(
@@ -50,22 +51,28 @@ public class TradeLockRuleFilterFactory {
     @NoArgsConstructor
     public static class DynamicContext {
 
-        private String teamStockKey = "group_buy_market_team_stock_key_";
-
         private GroupBuyActivityEntity groupBuyActivity;
 
         private Integer userTakeOrderCount;
 
         public String generateTeamStockKey(String teamId) {
             if (StringUtils.isBlank(teamId)) return null;
-            return teamStockKey + groupBuyActivity.getActivityId() + "_" + teamId;
+            return TradeLockRuleFilterFactory.generateTeamStockKey(groupBuyActivity.getActivityId(), teamId);
         }
 
         public String generateRecoveryTeamStockKey(String teamId) {
             if (StringUtils.isBlank(teamId)) return null;
-            return teamStockKey + groupBuyActivity.getActivityId() + "_" + teamId + "_recovery";
+            return TradeLockRuleFilterFactory.generateRecoveryTeamStockKey(groupBuyActivity.getActivityId(), teamId);
         }
 
+    }
+
+    public static String generateTeamStockKey(Long activityId, String teamId){
+        return teamStockKey + activityId + "_" + teamId;
+    }
+
+    public static String generateRecoveryTeamStockKey(Long activityId, String teamId) {
+        return teamStockKey + activityId + "_" + teamId + "_recovery";
     }
 
 }

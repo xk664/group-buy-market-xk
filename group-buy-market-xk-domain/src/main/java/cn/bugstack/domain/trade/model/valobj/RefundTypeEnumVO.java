@@ -1,5 +1,6 @@
 package cn.bugstack.domain.trade.model.valobj;
 
+import cn.bugstack.domain.trade.model.entity.TradeRefundOrderEntity;
 import cn.bugstack.types.enums.GroupBuyOrderEnumVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,18 +25,20 @@ public enum RefundTypeEnumVO {
             return GroupBuyOrderEnumVO.PROGRESS.equals(groupBuyOrderEnumVO) && TradeOrderStatusEnumVO.CREATE.equals(tradeOrderStatusEnumVO);
         }
     },
-    
+
     PAID_UNFORMED("paid_unformed", "paid2RefundStrategy", "已支付，未成团") {
         @Override
         public boolean matches(GroupBuyOrderEnumVO groupBuyOrderEnumVO, TradeOrderStatusEnumVO tradeOrderStatusEnumVO) {
             return GroupBuyOrderEnumVO.PROGRESS.equals(groupBuyOrderEnumVO) && TradeOrderStatusEnumVO.COMPLETE.equals(tradeOrderStatusEnumVO);
         }
     },
-    
+
     PAID_FORMED("paid_formed", "paidTeam2RefundStrategy", "已支付，已成团") {
         @Override
         public boolean matches(GroupBuyOrderEnumVO groupBuyOrderEnumVO, TradeOrderStatusEnumVO tradeOrderStatusEnumVO) {
-            return GroupBuyOrderEnumVO.COMPLETE.equals(groupBuyOrderEnumVO) && TradeOrderStatusEnumVO.COMPLETE.equals(tradeOrderStatusEnumVO);
+            // 完成、完成含退单，都做此处理
+            return (GroupBuyOrderEnumVO.COMPLETE.equals(groupBuyOrderEnumVO) || GroupBuyOrderEnumVO.COMPLETE_FAIL.equals(groupBuyOrderEnumVO))
+                    && TradeOrderStatusEnumVO.COMPLETE.equals(tradeOrderStatusEnumVO);
         }
     },
     ;
@@ -59,13 +62,13 @@ public enum RefundTypeEnumVO {
                 .orElseThrow(() -> new RuntimeException("不支持的退款状态组合: groupBuyOrderStatus=" + groupBuyOrderEnumVO + ", tradeOrderStatus=" + tradeOrderStatusEnumVO));
     }
 
-    public static RefundTypeEnumVO valueOf(Integer code) {
+    public static RefundTypeEnumVO getRefundTypeEnumVOByCode(String code) {
         switch (code) {
-            case 1:
+            case "unpaid_unlock":
                 return UNPAID_UNLOCK;
-            case 2:
+            case "paid_unformed":
                 return PAID_UNFORMED;
-            case 3:
+            case "paid_formed":
                 return PAID_FORMED;
         }
         throw new RuntimeException("退单类型枚举值不存在: " + code);
