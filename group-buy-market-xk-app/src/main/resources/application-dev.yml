@@ -96,3 +96,58 @@ logging:
   level:
     root: info
   config: classpath:logback-spring.xml
+# ============ AI 客服 RAG ============
+# PG 与 LLM 均通过环境变量注入；AI_LLM_API_KEY 留空时启用 Mock 实现（仅本地联调，不调真实模型）
+ai:
+  datasource:
+    username: ${AI_DB_USERNAME:postgres}
+    password: ${AI_DB_PASSWORD:change-me}
+    url: ${AI_DB_URL:jdbc:postgresql://your-pg-host:5432/group_buy_market_ai}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: AiHikariCP
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+  llm:
+    base-url: ${AI_LLM_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+    api-key: ${AI_LLM_API_KEY:}
+    chat-model: ${AI_CHAT_MODEL:qwen-plus}
+    embedding-model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
+    timeout-seconds: 30
+  knowledge:
+    root-path: ${AI_KNOWLEDGE_PATH:./knowledge}
+    watch-enabled: false
+  retrieval:
+    vector-top-k: 20
+    fulltext-top-k: 20
+    rrf-k: 60
+    result-top-k: 5
+    similarity-threshold: 0.5
+  analyzer:
+    mode: rule
+    rerank-mode: score
+    rerank-model: bge-reranker-v2-m3
+    rerank-base-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+  tool:
+    enabled: false
+    mcp-enabled: false
+  optimization:
+    faq-direct: true
+  es:
+    enabled: false
+    host: ${AI_ES_HOST:http://192.168.232.128:9200}
+    index: ai_knowledge_chunk
+    username: ${AI_ES_USERNAME:}
+    password: ${AI_ES_PASSWORD:}
+    analyzer: ik_max_word
+    connect-timeout-ms: 3000
+  chunking:
+    parent-child-enabled: true
+    parent-threshold: 400
+    child-size: 200
+    child-overlap: 30
+  conflict:
+    enabled: true
+    threshold: 0.85
+    top-k: 10

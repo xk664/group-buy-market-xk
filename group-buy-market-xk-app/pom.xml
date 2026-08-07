@@ -105,6 +105,11 @@
             <groupId>cn.bugstack</groupId>
             <artifactId>group-buy-market-xk-infrastructure</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>cn.bugstack</groupId>
+            <artifactId>group-buy-market-xk-ai</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
