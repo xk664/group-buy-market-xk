@@ -1,6 +1,5 @@
 package cn.bugstack.ai.chat;
 
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -14,7 +13,6 @@ import java.util.Map;
  * - 投诉/闲聊 → OTHER → 人工处理中...
  * - 其余按关键词命中数判定 REFUND / PRODUCT / GROUPON
  */
-@Primary
 @Component
 public class RuleQueryAnalyzer implements QueryAnalyzer {
 

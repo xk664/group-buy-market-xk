@@ -38,8 +38,20 @@ public class DashScopeReranker {
     }
 
     public boolean available() {
-        String key = properties.getLlm().getApiKey();
+        String key = rerankKey();
         return key != null && !key.trim().isEmpty() && !PLACEHOLDER.equals(key.trim());
+    }
+
+    /** 重排 Key：优先专用 Key，其次 Embedding Key，最后对话 Key */
+    private String rerankKey() {
+        String key = properties.getAnalyzer().getRerankApiKey();
+        if (key == null || key.trim().isEmpty()) {
+            key = properties.getLlm().getEmbeddingApiKey();
+        }
+        if (key == null || key.trim().isEmpty()) {
+            key = properties.getLlm().getApiKey();
+        }
+        return key;
     }
 
     public List<ScoredChunk> rerank(String query, List<ScoredChunk> candidates, int topK) {
@@ -56,7 +68,7 @@ public class DashScopeReranker {
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(properties.getLlm().getApiKey().trim());
+        headers.setBearerAuth(rerankKey().trim());
 
         try {
             ResponseEntity<String> resp = restTemplate.postForEntity(

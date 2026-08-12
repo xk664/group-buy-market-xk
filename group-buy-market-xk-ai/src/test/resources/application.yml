@@ -1,0 +1,54 @@
+# AI 控制台运行器专用配置（不启动 Web/其他中间件）
+ai:
+  datasource:
+    username: ${AI_DB_USERNAME:root}
+    password: ${AI_DB_PASSWORD:<你的PG密码>}
+    url: ${AI_DB_URL:jdbc:postgresql://106.53.178.125:5432/group_buy_market_ai}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: AiHikariCP
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+  llm:
+    protocol: dashscope-native
+    base-url: https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1
+    api-key: ${AI_CHAT_API_KEY:sk-<你的对话LLM密钥>}
+    chat-model: deepseek-v4-flash
+    embedding-api-key: ${AI_EMBEDDING_API_KEY:sk-ws-<你的embedding密钥>}
+    embedding-model: text-embedding-v1
+    timeout-seconds: 60
+  knowledge:
+    root-path: D:/group-buy-market-xk/knowledge
+    watch-enabled: false
+  retrieval:
+    vector-top-k: 20
+    fulltext-top-k: 20
+    rrf-k: 60
+    result-top-k: 5
+    similarity-threshold: 0.3
+    cache-ttl-seconds: 300
+  analyzer:
+    mode: rule
+    rerank-mode: cross-encoder
+    rerank-model: gte-rerank-v2
+    rerank-base-url: https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+    rerank-api-key: ${AI_RERANK_API_KEY:sk-ws-<你的embedding密钥>}
+  tool:
+    enabled: false
+    mcp-enabled: false
+  optimization:
+    faq-direct: true
+  conflict:
+    enabled: false
+    threshold: 0.85
+    top-k: 10
+  chunking:
+    parent-child-enabled: true
+    parent-threshold: 50
+    child-size: 80
+    child-overlap: 30
+  es:
+    enabled: false
+    host: http://192.168.232.128:9200
+    index: ai_knowledge_chunk

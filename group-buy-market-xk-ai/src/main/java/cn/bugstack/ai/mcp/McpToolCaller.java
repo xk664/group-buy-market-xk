@@ -4,6 +4,7 @@ import cn.bugstack.ai.tool.ToolResult;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.spec.McpSchema;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(prefix = "ai.tool", name = "mcp-enabled", havingValue = "true")
 public class McpToolCaller {
 
     private final McpSyncClient mcpSyncClient;

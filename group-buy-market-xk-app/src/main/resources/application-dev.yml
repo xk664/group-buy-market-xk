@@ -100,9 +100,9 @@ logging:
 # PG 与 LLM 均通过环境变量注入；AI_LLM_API_KEY 留空时启用 Mock 实现（仅本地联调，不调真实模型）
 ai:
   datasource:
-    username: ${AI_DB_USERNAME:postgres}
-    password: ${AI_DB_PASSWORD:change-me}
-    url: ${AI_DB_URL:jdbc:postgresql://your-pg-host:5432/group_buy_market_ai}
+    username: ${AI_DB_USERNAME:root}
+    password: ${AI_DB_PASSWORD:<你的PG密码>}
+    url: ${AI_DB_URL:jdbc:postgresql://106.53.178.125:5432/group_buy_market_ai}
     driver-class-name: org.postgresql.Driver
     hikari:
       pool-name: AiHikariCP
@@ -110,10 +110,15 @@ ai:
       minimum-idle: 2
       connection-timeout: 30000
   llm:
-    base-url: ${AI_LLM_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
-    api-key: ${AI_LLM_API_KEY:}
-    chat-model: ${AI_CHAT_MODEL:qwen-plus}
-    embedding-model: ${AI_EMBEDDING_MODEL:text-embedding-v3}
+    protocol: ${AI_LLM_PROTOCOL:dashscope-native}
+    # 对话 LLM（deepseek-v4-flash）
+    base-url: ${AI_CHAT_BASE_URL:https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1}
+    api-key: ${AI_CHAT_API_KEY:sk-<你的对话LLM密钥>}
+    chat-model: ${AI_CHAT_MODEL:deepseek-v4-flash}
+    # Embedding（text-embedding-v1，独立地址/Key）
+    embedding-base-url: ${AI_EMBEDDING_BASE_URL:https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1}
+    embedding-api-key: ${AI_EMBEDDING_API_KEY:sk-ws-<你的embedding密钥>}
+    embedding-model: ${AI_EMBEDDING_MODEL:text-embedding-v1}
     timeout-seconds: 30
   knowledge:
     root-path: ${AI_KNOWLEDGE_PATH:./knowledge}
@@ -126,9 +131,10 @@ ai:
     similarity-threshold: 0.5
   analyzer:
     mode: rule
-    rerank-mode: score
-    rerank-model: bge-reranker-v2-m3
-    rerank-base-url: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+    rerank-mode: cross-encoder
+    rerank-model: gte-rerank-v2
+    rerank-base-url: https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank
+    rerank-api-key: ${AI_RERANK_API_KEY:sk-ws-<你的embedding密钥>}
   tool:
     enabled: false
     mcp-enabled: false

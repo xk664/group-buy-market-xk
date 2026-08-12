@@ -25,20 +25,31 @@ public class OpenAiLlmClient implements LlmClient {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final String baseUrl;
+    private final String embeddingBaseUrl;
 
     public OpenAiLlmClient(AiProperties.Llm props, RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.props = props;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.baseUrl = props.getBaseUrl().replaceAll("/+$", "");
+        this.embeddingBaseUrl = (props.getEmbeddingBaseUrl() == null || props.getEmbeddingBaseUrl().trim().isEmpty()
+                ? props.getBaseUrl() : props.getEmbeddingBaseUrl()).replaceAll("/+$", "");
     }
 
     @Override
     public String chat(String systemPrompt, String userPrompt) {
+        boolean nativeMode = "dashscope-native".equals(props.getProtocol());
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", props.getChatModel());
-        body.put("temperature", 0.2);
-        ArrayNode messages = body.putArray("messages");
+        ArrayNode messages;
+        if (nativeMode) {
+            ObjectNode input = body.putObject("input");
+            messages = input.putArray("messages");
+            body.putObject("parameters").put("temperature", 0.2);
+        } else {
+            messages = body.putArray("messages");
+            body.put("temperature", 0.2);
+        }
         ObjectNode sys = messages.addObject();
         sys.put("role", "system");
         sys.put("content", systemPrompt);
@@ -46,8 +57,11 @@ public class OpenAiLlmClient implements LlmClient {
         user.put("role", "user");
         user.put("content", userPrompt);
 
-        JsonNode resp = post("/chat/completions", body);
-        JsonNode choice = resp.path("choices").path(0);
+        String url = nativeMode
+                ? baseUrl + "/services/aigc/text-generation/generation"
+                : baseUrl + "/chat/completions";
+        JsonNode resp = post(url, body, props.getApiKey());
+        JsonNode choice = nativeMode ? resp.path("output").path("choices").path(0) : resp.path("choices").path(0);
         String content = choice.path("message").path("content").asText(null);
         if (content == null) {
             throw new IllegalStateException("LLM 响应缺少 choices[0].message.content: " + resp);
@@ -57,13 +71,22 @@ public class OpenAiLlmClient implements LlmClient {
 
     @Override
     public List<float[]> embed(List<String> texts) {
+        boolean nativeMode = "dashscope-native".equals(props.getProtocol());
         ObjectNode body = objectMapper.createObjectNode();
         body.put("model", props.getEmbeddingModel());
-        ArrayNode input = body.putArray("input");
-        texts.forEach(input::add);
+        if (nativeMode) {
+            ArrayNode textsNode = body.putObject("input").putArray("texts");
+            texts.forEach(textsNode::add);
+        } else {
+            ArrayNode input = body.putArray("input");
+            texts.forEach(input::add);
+        }
 
-        JsonNode resp = post("/embeddings", body);
-        JsonNode data = resp.path("data");
+        String url = nativeMode
+                ? baseUrl + "/services/embeddings/text-embedding/text-embedding"
+                : embeddingBaseUrl + "/embeddings";
+        JsonNode resp = post(url, body, embeddingKey());
+        JsonNode data = nativeMode ? resp.path("output").path("embeddings") : resp.path("data");
         List<float[]> result = new ArrayList<>(texts.size());
         for (JsonNode item : data) {
             JsonNode emb = item.path("embedding");
@@ -76,18 +99,24 @@ public class OpenAiLlmClient implements LlmClient {
         return result;
     }
 
+    /** Embedding 专用 Key：优先独立 Key，其次复用对话 Key */
+    private String embeddingKey() {
+        return (props.getEmbeddingApiKey() == null || props.getEmbeddingApiKey().trim().isEmpty())
+                ? props.getApiKey() : props.getEmbeddingApiKey();
+    }
+
     @Override
     public boolean isMock() {
         return false;
     }
 
-    private JsonNode post(String path, ObjectNode body) {
+    private JsonNode post(String url, ObjectNode body, String apiKey) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(props.getApiKey().trim());
+        headers.setBearerAuth(apiKey.trim());
         try {
             ResponseEntity<String> resp = restTemplate.postForEntity(
-                    baseUrl + path, new HttpEntity<>(body.toString(), headers), String.class);
+                    url, new HttpEntity<>(body.toString(), headers), String.class);
             if (!resp.getStatusCode().is2xxSuccessful()) {
                 throw new IllegalStateException("LLM HTTP " + resp.getStatusCode() + ": " + resp.getBody());
             }
@@ -95,7 +124,7 @@ public class OpenAiLlmClient implements LlmClient {
         } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException("调用 LLM 失败 path=" + path, e);
+            throw new IllegalStateException("调用 LLM 失败 url=" + url, e);
         }
     }
 

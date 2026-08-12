@@ -42,11 +42,17 @@ public class AiProperties {
 
     @Data
     public static class Llm {
-        /** OpenAI 兼容 base-url，如 DashScope compatible-mode */
+        /** 协议：openai=OpenAI 兼容格式；dashscope-native=DashScope 原生格式 */
+        private String protocol = "openai";
+        /** 对话 LLM 的 OpenAI 兼容 base-url */
         private String baseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1";
-        /** 留空或为占位符时启用 Mock 实现 */
+        /** 对话 LLM 的 API Key；留空或为占位符时启用 Mock 实现 */
         private String apiKey;
         private String chatModel = "qwen-plus";
+        /** Embedding 独立地址（默认复用 baseUrl） */
+        private String embeddingBaseUrl;
+        /** Embedding 独立 Key（默认复用 apiKey） */
+        private String embeddingApiKey;
         private String embeddingModel = "text-embedding-v3";
         private Integer timeoutSeconds = 30;
     }
@@ -76,9 +82,11 @@ public class AiProperties {
         /** score=按分数重排(默认) cross-encoder=云端重排 */
         private String rerankMode = "score";
         /** 云端重排模型（DashScope text-rerank） */
-        private String rerankModel = "bge-reranker-v2-m3";
+        private String rerankModel = "gte-rerank-v2";
         /** 云端重排接口地址 */
-        private String rerankBaseUrl = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank";
+        private String rerankBaseUrl = "https://ws-fjail6hets52nr17.cn-beijing.maas.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank";
+        /** 重排专用 Key（默认复用 embeddingApiKey → apiKey） */
+        private String rerankApiKey;
     }
 
     @Data
@@ -118,6 +126,12 @@ public class AiProperties {
         private Integer childSize = 200;
         /** 子块重叠（字符） */
         private Integer childOverlap = 30;
+        /** 切分策略：structured=结构化(默认) fixed-size=固定大小 */
+        private String strategy = "structured";
+        /** 固定大小切分：块大小（字符） */
+        private Integer fixedChunkSize = 500;
+        /** 固定大小切分：重叠（字符） */
+        private Integer fixedChunkOverlap = 50;
     }
 
     @Data

@@ -218,7 +218,7 @@ public class KnowledgeRepository {
                 "FROM ai_knowledge_chunk c JOIN ai_knowledge_doc d ON d.id = c.doc_id " +
                 "WHERE 1 - (c.embedding <=> ?::vector) >= ? " +
                 "AND d.status = 'ACTIVE' " +
-                "AND (? IS NULL OR c.metadata->>'category' = ?) " +
+                "AND (?::text IS NULL OR c.metadata->>'category' = ?) " +
                 "AND (d.effective_date IS NULL OR d.effective_date <= CURRENT_DATE) " +
                 "AND (d.expire_date IS NULL OR d.expire_date > CURRENT_DATE) " +
                 "ORDER BY 1 - (c.embedding <=> ?::vector) DESC LIMIT ?";
@@ -241,7 +241,7 @@ public class KnowledgeRepository {
                 "FROM ai_knowledge_chunk c JOIN ai_knowledge_doc d ON d.id = c.doc_id " +
                 "WHERE to_tsvector('simple', c.search_text) @@ to_tsquery('simple', ?) " +
                 "AND d.status = 'ACTIVE' " +
-                "AND (? IS NULL OR c.metadata->>'category' = ?) " +
+                "AND (?::text IS NULL OR c.metadata->>'category' = ?) " +
                 "AND (d.effective_date IS NULL OR d.effective_date <= CURRENT_DATE) " +
                 "AND (d.expire_date IS NULL OR d.expire_date > CURRENT_DATE) " +
                 "ORDER BY score DESC LIMIT ?";
