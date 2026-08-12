@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS ai_knowledge_chunk (
     chunk_text   TEXT NOT NULL,
     search_text  TEXT NOT NULL DEFAULT '',          -- 中文按字符空格分词后的文本，用于 simple 配置全文检索
     section_path TEXT,
-    embedding    vector(1024),                      -- 按实际 Embedding 维度（text-embedding-v3=1024）
+    embedding    vector(1536),                      -- 按实际 Embedding 维度（text-embedding-v1=1536）
     metadata     JSONB,
     created_at   TIMESTAMP NOT NULL DEFAULT now(),
     UNIQUE (doc_id, chunk_index)

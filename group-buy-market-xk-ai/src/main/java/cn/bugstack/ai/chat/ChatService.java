@@ -94,7 +94,8 @@ public class ChatService {
             if (answer == null) {
                 List<ScoredChunk> chunks = retrievalCache.get(plan.getCategoryFilter(), plan.getRewrittenQuery());
                 if (chunks == null) {
-                    chunks = hybridRetriever.retrieve(plan.getRewrittenQuery(), plan.getCategoryFilter());
+                    // 召回 Top-10，重排后取 Top-5（cross-encoder 才能体现价值）
+                    chunks = hybridRetriever.retrieve(plan.getRewrittenQuery(), plan.getCategoryFilter(), 10);
                     retrievalCache.put(plan.getCategoryFilter(), plan.getRewrittenQuery(), chunks);
                 }
                 chunks = reranker.rerank(plan.getRewrittenQuery(), chunks, properties.getRetrieval().getResultTopK());

@@ -105,6 +105,11 @@ public class HybridRetriever {
     }
 
     public List<ScoredChunk> retrieve(String question, String categoryFilter) {
+        return retrieve(question, categoryFilter, properties.getRetrieval().getResultTopK());
+    }
+
+    /** 指定返回条数（重排场景：召回 Top-10 再精排） */
+    public List<ScoredChunk> retrieve(String question, String categoryFilter, int topK) {
         AiProperties.Retrieval cfg = properties.getRetrieval();
         String embeddingLiteral = EmbeddingService.toVectorLiteral(embeddingService.embed(question));
 
@@ -113,13 +118,13 @@ public class HybridRetriever {
         String tsQuery = TextSearchUtil.toTsQuery(question);
         List<ScoredChunk> fulltext = fulltextSearch(question, tsQuery, categoryFilter, cfg.getFulltextTopK());
 
-        List<ScoredChunk> fused = RrfFusion.fuse(vector, fulltext, cfg.getRrfK(), cfg.getResultTopK());
+        List<ScoredChunk> fused = RrfFusion.fuse(vector, fulltext, cfg.getRrfK(), topK);
 
         if (fused.isEmpty() && categoryFilter != null) {
             vector = repository.searchVector(
                     embeddingLiteral, null, cfg.getVectorTopK(), cfg.getSimilarityThreshold());
             fulltext = fulltextSearch(question, tsQuery, null, cfg.getFulltextTopK());
-            fused = RrfFusion.fuse(vector, fulltext, cfg.getRrfK(), cfg.getResultTopK());
+            fused = RrfFusion.fuse(vector, fulltext, cfg.getRrfK(), topK);
         }
         return fused;
     }

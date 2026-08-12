@@ -1,6 +1,7 @@
 package cn.bugstack.ai.rag.eval;
 
 import cn.bugstack.ai.rag.retriever.HybridRetriever;
+import cn.bugstack.ai.rag.retriever.Reranker;
 import cn.bugstack.ai.rag.retriever.ScoredChunk;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,12 @@ import java.util.Map;
 public class EvaluationService {
 
     private final HybridRetriever hybridRetriever;
+    private final Reranker reranker;
     private final GoldenSetLoader loader = new GoldenSetLoader();
 
-    public EvaluationService(HybridRetriever hybridRetriever) {
+    public EvaluationService(HybridRetriever hybridRetriever, Reranker reranker) {
         this.hybridRetriever = hybridRetriever;
+        this.reranker = reranker;
     }
 
     public EvalResult evaluate(String goldenPath) {
@@ -46,7 +49,9 @@ public class EvaluationService {
             }
             evaluated++;
             String category = c.getCategory().toUpperCase();
-            List<ScoredChunk> chunks = hybridRetriever.retrieve(c.getQuestion(), category);
+            // 召回 Top-10 → 重排 Top-5（与在线链路一致）
+            List<ScoredChunk> candidates = hybridRetriever.retrieve(c.getQuestion(), category, 10);
+            List<ScoredChunk> chunks = reranker.rerank(c.getQuestion(), candidates, 5);
             boolean hit = chunks.stream().anyMatch(chunk -> match(chunk, c));
             int[] counter = statCounters.computeIfAbsent(category, k -> new int[2]);
             counter[0]++;

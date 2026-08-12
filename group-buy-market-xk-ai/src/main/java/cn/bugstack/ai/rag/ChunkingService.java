@@ -38,6 +38,10 @@ public class ChunkingService {
     }
 
     public List<Chunk> split(ParsedDocument doc) {
+        // 固定大小切分（基线）：忽略文档结构，统一按 chunkSize/overlap 切
+        if ("fixed-size".equals(config.getStrategy())) {
+            return splitFixedSize(doc);
+        }
         String docType = doc.getDocType() == null ? "" : doc.getDocType().toUpperCase(Locale.ROOT);
         if ("FAQ".equals(docType)) {
             return splitFaq(doc);
@@ -46,6 +50,22 @@ public class ChunkingService {
             return splitParamTable(doc);
         }
         return splitBySections(doc, docType);
+    }
+
+    /** 固定大小切分：对整篇原始文本统一按固定大小+重叠切块 */
+    private List<Chunk> splitFixedSize(ParsedDocument doc) {
+        List<Chunk> chunks = new ArrayList<Chunk>();
+        RecursiveCharacterTextSplitter splitter =
+                new RecursiveCharacterTextSplitter(config.getFixedChunkSize(), config.getFixedChunkOverlap());
+        int index = 0;
+        for (String part : splitter.splitText(doc.getRawText())) {
+            chunks.add(Chunk.builder()
+                    .text(part)
+                    .sectionPath(doc.getTitle())
+                    .index(index++)
+                    .build());
+        }
+        return chunks;
     }
 
     private List<Chunk> splitFaq(ParsedDocument doc) {
@@ -105,16 +125,18 @@ public class ChunkingService {
                         .index(index++)
                         .parentIndex(-1)
                         .build());
-                // 子块：小块递归切分，parentIndex 指向父块
-                RecursiveCharacterTextSplitter childSplitter =
-                        new RecursiveCharacterTextSplitter(config.getChildSize(), config.getChildOverlap());
-                for (String part : childSplitter.splitText(content)) {
-                    chunks.add(Chunk.builder()
-                            .text(prefix + part)
-                            .sectionPath(section.getPath())
-                            .index(index++)
-                            .parentIndex(parentIndex)
-                            .build());
+                // 子块：仅当内容真正大于子块大小时才切分（否则子块=父块全文，属于冗余）
+                if (content.length() > config.getChildSize()) {
+                    RecursiveCharacterTextSplitter childSplitter =
+                            new RecursiveCharacterTextSplitter(config.getChildSize(), config.getChildOverlap());
+                    for (String part : childSplitter.splitText(content)) {
+                        chunks.add(Chunk.builder()
+                                .text(prefix + part)
+                                .sectionPath(section.getPath())
+                                .index(index++)
+                                .parentIndex(parentIndex)
+                                .build());
+                    }
                 }
             } else if (content.length() <= MAX_SECTION_CHARS) {
                 chunks.add(Chunk.builder()
